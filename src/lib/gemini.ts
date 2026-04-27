@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Scene } from "../types";
 
-export async function validateApiKey(userApiKey: string, model: string = "gemini-1.5-flash"): Promise<boolean> {
+export async function validateApiKey(userApiKey: string, model: string = "gemini-3.1-flash-lite-preview"): Promise<boolean> {
   try {
     const ai = new GoogleGenAI({ apiKey: userApiKey });
     // Use the requested model first
@@ -62,7 +62,7 @@ export async function generateStoryboard(
   stylePrompt?: string,
   referenceImage?: File,
   userApiKey?: string,
-  model: string = "gemini-1.5-flash"
+  model: string = "gemini-3.1-flash-lite-preview"
 ): Promise<Scene[]> {
   const apiKey = userApiKey || import.meta.env.VITE_GEMINI_API_KEY || (process.env as any)?.GEMINI_API_KEY;
   if (!apiKey) {
