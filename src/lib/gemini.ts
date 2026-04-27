@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Scene } from "../types";
 
-export async function validateApiKey(userApiKey: string, model: string = "gemini-3-flash-preview"): Promise<boolean> {
+export async function validateApiKey(userApiKey: string, model: string = "gemini-1.5-flash"): Promise<boolean> {
   try {
     const ai = new GoogleGenAI({ apiKey: userApiKey });
     // Use the requested model first
@@ -12,12 +12,12 @@ export async function validateApiKey(userApiKey: string, model: string = "gemini
     });
     return true;
   } catch (error: any) {
-    // If it was a model 404, try with gemini-3-flash-preview to see if the key is just valid
+    // If it was a model 404, try with gemini-1.5-flash to see if the key is just valid
     if (error?.message?.includes("404") || error?.status === "NOT_FOUND") {
       try {
         const ai = new GoogleGenAI({ apiKey: userApiKey });
         await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
+          model: "gemini-1.5-flash",
           contents: "Hi"
         });
         return true;

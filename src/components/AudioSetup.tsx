@@ -15,7 +15,7 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
   const [stylePrompt, setStylePrompt] = useState("");
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("gemini-3-flash-preview");
+  const [model, setModel] = useState("gemini-1.5-flash");
   const [isValidatingKey, setIsValidatingKey] = useState(false);
   const [keyStatus, setKeyStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -74,10 +74,9 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
               disabled={isLoading || isValidatingKey}
               className="bg-slate-950 border border-slate-800 text-slate-300 rounded text-[10px] uppercase font-bold p-1 pr-6 outline-none focus:border-emerald-500 cursor-pointer"
             >
-              <option value="gemini-3-flash-preview">Gemini 3 Flash (Latest)</option>
-              <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Complex)</option>
-              <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite</option>
-              <option value="gemini-1.5-flash">Gemini 1.5 Flash (Legacy)</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash (Free)</option>
+              <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash-8B (Free)</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash (Free)</option>
             </select>
           </div>
           <div className="flex gap-2">
