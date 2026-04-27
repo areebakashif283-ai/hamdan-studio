@@ -15,16 +15,18 @@ export default function App() {
   const [audioUrl, setAudioUrl] = useState('');
   const [audioDuration, setAudioDuration] = useState(0);
   const [scenes, setScenes] = useState<Scene[]>([]);
+  const [userApiKey, setUserApiKey] = useState('');
 
-  const handleGenerate = async (finalScript: string, audioFile: File, newAudioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File) => {
+  const handleGenerate = async (finalScript: string, audioFile: File, newAudioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File, providedApiKey?: string) => {
     setIsLoading(true);
     setScript(finalScript);
     setAudioUrl(newAudioUrl);
     setAudioDuration(duration);
 
     try {
-      const generatedScenes = await generateStoryboard(finalScript, duration, stylePrompt, referenceImage);
+      const generatedScenes = await generateStoryboard(finalScript, duration, stylePrompt, referenceImage, providedApiKey);
       setScenes(generatedScenes);
+      setUserApiKey(providedApiKey || '');
       setStep(2);
     } catch (error) {
       console.error(error);

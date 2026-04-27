@@ -19,11 +19,12 @@ export async function generateStoryboard(
   script: string, 
   audioDuration: number,
   stylePrompt?: string,
-  referenceImage?: File
+  referenceImage?: File,
+  userApiKey?: string
 ): Promise<Scene[]> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+  const apiKey = userApiKey || import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("Gemini API key is missing. Please add it to your environment variables.");
+    throw new Error("Gemini API key is missing. Please provide it, or add it to your environment variables.");
   }
 
   const ai = new GoogleGenAI({ apiKey });

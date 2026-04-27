@@ -3,7 +3,7 @@ import { UploadCloud, Loader2, Play } from "lucide-react";
 import { cn, formatTime } from "../lib/utils";
 
 interface AudioSetupProps {
-  onGenerate: (script: string, audioFile: File, audioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File) => void;
+  onGenerate: (script: string, audioFile: File, audioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File, apiKey?: string) => void;
   isLoading: boolean;
 }
 
@@ -13,6 +13,7 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
   const [duration, setDuration] = useState<number>(0);
   const [stylePrompt, setStylePrompt] = useState("");
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
+  const [apiKey, setApiKey] = useState("");
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,12 +46,25 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
     if (!script.trim() || !file || duration === 0) return;
     
     const url = URL.createObjectURL(file);
-    onGenerate(script, file, url, duration, stylePrompt.trim() ? stylePrompt : undefined, referenceImage || undefined);
+    onGenerate(script, file, url, duration, stylePrompt.trim() ? stylePrompt : undefined, referenceImage || undefined, apiKey.trim() ? apiKey.trim() : undefined);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full">
       <div className="space-y-3">
+        <div className="p-3 bg-slate-900 border border-slate-800 rounded">
+          <label className="text-[10px] text-slate-500 block mb-2 uppercase font-bold tracking-wider">Gemini API Key (Optional)</label>
+          <input
+            type="password"
+            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 text-xs text-slate-300 placeholder-slate-700 outline-none"
+            placeholder="Paste your Gemini AI API key here (Optional if already configured)"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            disabled={isLoading}
+          />
+          <p className="text-[10px] text-slate-500 mt-2">Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Google AI Studio</a> to use the gemini-1.5-flash model.</p>
+        </div>
+
         <div className="p-3 bg-slate-900 border border-slate-800 rounded">
           <label className="text-[10px] text-slate-500 block mb-2 uppercase font-bold tracking-wider">Step 1: Write or Paste Your Script</label>
           <textarea
