@@ -12,21 +12,33 @@ export async function validateApiKey(userApiKey: string, model: string = "gemini
     });
     return true;
   } catch (error: any) {
-    // If it was a model 404, try with gemini-1.5-flash to see if the key is just valid
-    if (error?.message?.includes("404") || error?.status === "NOT_FOUND") {
-      try {
-        const ai = new GoogleGenAI({ apiKey: userApiKey });
-        await ai.models.generateContent({
-          model: "gemini-1.5-flash",
-          contents: "Hi"
-        });
-        return true;
-      } catch (innerError) {
-        console.error("API Key validation failed even with fallback:", innerError);
-        return false;
-      }
+    const msg = error?.message?.toLowerCase() || "";
+    const status = error?.status || "";
+    const code = error?.code || 0;
+    
+    // Specific authentication/key errors mean invalid key
+    if (
+      msg.includes("api key not valid") || 
+      status === "UNAUTHENTICATED" || 
+      status === "PERMISSION_DENIED" ||
+      code === 401 || 
+      code === 403 ||
+      (code === 400 && msg.includes("api key"))
+    ) {
+      console.error("API Key validation failed (Invalid Key):", error);
+      return false;
     }
-    console.error("API Key validation failed:", error);
+    
+    // If it's 404 (Model not found) or 429 (Quota/High Demand), the API key itself is actually valid!
+    if (
+      msg.includes("404") || status === "NOT_FOUND" || code === 404 ||
+      msg.includes("429") || status === "RESOURCE_EXHAUSTED" || code === 429
+    ) {
+      console.warn(`API validation threw ${code || status}, but key is structurally valid. Proceeding.`, error);
+      return true;
+    }
+
+    console.error("API Key validation failed with unknown error:", error);
     return false;
   }
 }
