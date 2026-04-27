@@ -61,6 +61,40 @@ export default function App() {
     };
   };
 
+  const handleBulkUploadImages = (files: File[]) => {
+    const sortedFiles = [...files].sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
+    
+    Promise.all(sortedFiles.map(file => {
+      return new Promise<{url: string, img: HTMLImageElement, file: File}>((resolve) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.src = url;
+        img.onload = () => resolve({url, img, file});
+      });
+    })).then(loadedImages => {
+      setScenes(prev => {
+        const nextScenes = [...prev];
+        let imgIndex = 0;
+        for (let i = 0; i < nextScenes.length && imgIndex < loadedImages.length; i++) {
+          const isZoomIn = i % 2 === 0;
+          const loaded = loadedImages[imgIndex++];
+          nextScenes[i] = {
+              ...nextScenes[i],
+              imageUrl: loaded.url,
+              imageElement: loaded.img,
+              zoomStart: isZoomIn ? 1.0 : 1.15,
+              zoomEnd: isZoomIn ? 1.15 : 1.0,
+              panXStart: 0,
+              panXEnd: 0,
+              panYStart: 0,
+              panYEnd: 0
+          };
+        }
+        return nextScenes;
+      });
+    });
+  };
+
   const handleUpdateScene = (sceneId: string, updates: Partial<Scene>) => {
     setScenes(prev => prev.map(s => s.id === sceneId ? { ...s, ...updates } : s));
   };
@@ -101,6 +135,7 @@ export default function App() {
           <Storyboard 
             scenes={scenes} 
             onUploadImage={handleUploadImage}
+            onBulkUploadImages={handleBulkUploadImages}
             onProceed={() => setStep(3)}
           />
         )}

@@ -6,10 +6,11 @@ import { formatTime } from "../lib/utils";
 interface StoryboardProps {
   scenes: Scene[];
   onUploadImage: (sceneId: string, file: File) => void;
+  onBulkUploadImages: (files: File[]) => void;
   onProceed: () => void;
 }
 
-export function Storyboard({ scenes, onUploadImage, onProceed }: StoryboardProps) {
+export function Storyboard({ scenes, onUploadImage, onBulkUploadImages, onProceed }: StoryboardProps) {
   const handleImageChange = (sceneId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -35,6 +36,15 @@ export function Storyboard({ scenes, onUploadImage, onProceed }: StoryboardProps
           <p className="text-xs text-slate-500 mt-1">Generate images using these exact prompts, then upload to match.</p>
         </div>
         <div className="flex items-center gap-3">
+          <label className="shrink-0 px-4 py-2 flex items-center gap-2 rounded text-xs font-bold uppercase tracking-wider transition-all bg-indigo-600 hover:bg-indigo-500 text-white shadow shadow-indigo-900/50 cursor-pointer">
+            <UploadCloud className="w-3 h-3" />
+            Bulk Upload
+            <input type="file" multiple accept="image/*" className="hidden" onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    onBulkUploadImages(Array.from(e.target.files));
+                }
+            }} />
+          </label>
           <button
             onClick={() => {
               const allPrompts = scenes.map((s, idx) => `Scene ${idx + 1}:\n${s.imagePrompt}`).join('\n\n');
