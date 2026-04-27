@@ -16,14 +16,14 @@ export default function App() {
   const [audioDuration, setAudioDuration] = useState(0);
   const [scenes, setScenes] = useState<Scene[]>([]);
 
-  const handleGenerate = async (finalScript: string, audioFile: File, newAudioUrl: string, duration: number) => {
+  const handleGenerate = async (finalScript: string, audioFile: File, newAudioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File) => {
     setIsLoading(true);
     setScript(finalScript);
     setAudioUrl(newAudioUrl);
     setAudioDuration(duration);
 
     try {
-      const generatedScenes = await generateStoryboard(finalScript, duration);
+      const generatedScenes = await generateStoryboard(finalScript, duration, stylePrompt, referenceImage);
       setScenes(generatedScenes);
       setStep(2);
     } catch (error) {
@@ -40,19 +40,24 @@ export default function App() {
     img.src = url;
     
     img.onload = () => {
-      setScenes(prev => prev.map(s => 
-        s.id === sceneId ? { 
-          ...s, 
-          imageUrl: url, 
-          imageElement: img,
-          zoomStart: 1.05,
-          zoomEnd: 1.15,
-          panXStart: 0,
-          panXEnd: 0,
-          panYStart: 0,
-          panYEnd: 0
-        } : s
-      ));
+      setScenes(prev => {
+        const sceneIndex = prev.findIndex(s => s.id === sceneId);
+        const isZoomIn = sceneIndex % 2 === 0;
+        
+        return prev.map(s => 
+          s.id === sceneId ? { 
+            ...s, 
+            imageUrl: url, 
+            imageElement: img,
+            zoomStart: isZoomIn ? 1.0 : 1.15,
+            zoomEnd: isZoomIn ? 1.15 : 1.0,
+            panXStart: 0,
+            panXEnd: 0,
+            panYStart: 0,
+            panYEnd: 0
+          } : s
+        );
+      });
     };
   };
 

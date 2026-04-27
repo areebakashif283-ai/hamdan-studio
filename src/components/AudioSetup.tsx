@@ -3,7 +3,7 @@ import { UploadCloud, Loader2, Play } from "lucide-react";
 import { cn, formatTime } from "../lib/utils";
 
 interface AudioSetupProps {
-  onGenerate: (script: string, audioFile: File, audioUrl: string, duration: number) => void;
+  onGenerate: (script: string, audioFile: File, audioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File) => void;
   isLoading: boolean;
 }
 
@@ -11,6 +11,8 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
   const [script, setScript] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [duration, setDuration] = useState<number>(0);
+  const [stylePrompt, setStylePrompt] = useState("");
+  const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,6 +27,13 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (selected) {
+      setReferenceImage(selected);
+    }
+  };
+
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
@@ -36,7 +45,7 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
     if (!script.trim() || !file || duration === 0) return;
     
     const url = URL.createObjectURL(file);
-    onGenerate(script, file, url, duration);
+    onGenerate(script, file, url, duration, stylePrompt.trim() ? stylePrompt : undefined, referenceImage || undefined);
   };
 
   return (
@@ -79,6 +88,34 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
                 </>
               )}
             </div>
+          </div>
+        </div>
+
+        <div className="p-3 bg-slate-900 border border-slate-800 rounded">
+          <label className="text-[10px] text-slate-500 block mb-2 uppercase font-bold tracking-wider">Step 3: Visual Style (Optional)</label>
+          <textarea
+            className="w-full h-20 px-3 py-2 bg-slate-950 border border-slate-800 rounded focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 resize-none text-xs text-slate-300 placeholder-slate-700 outline-none mb-3"
+            placeholder="E.g., Cinematic lighting, 8k, photorealistic, cyberpunk aesthetic..."
+            value={stylePrompt}
+            onChange={(e) => setStylePrompt(e.target.value)}
+            disabled={isLoading}
+          />
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <label className="text-[10px] text-slate-500 block mb-1 uppercase font-bold tracking-wider">Reference Image (Optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={isLoading}
+                className="block w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[10px] file:uppercase file:font-bold file:tracking-wider file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700"
+              />
+            </div>
+            {referenceImage && (
+              <div className="w-12 h-12 rounded bg-slate-950 border border-slate-800 overflow-hidden flex-shrink-0">
+                <img src={URL.createObjectURL(referenceImage)} alt="Reference" className="w-full h-full object-cover" />
+              </div>
+            )}
           </div>
         </div>
 

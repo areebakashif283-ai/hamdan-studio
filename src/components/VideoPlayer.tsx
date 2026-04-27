@@ -18,10 +18,22 @@ export function VideoPlayer({ scenes, audioUrl, audioDuration, onUpdateScene }: 
   const [currentTime, setCurrentTime] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [transitionStyle, setTransitionStyle] = useState<'fade' | 'slide-left' | 'slide-right' | 'slide-up' | 'slide-down' | 'wipe-right' | 'wipe-left' | 'zoom' | 'none'>('fade');
+  const [exportResolution, setExportResolution] = useState('1080p');
+  const [exportFps, setExportFps] = useState(30);
   
   // MediaRecorder refs (Optional feature - mostly reliable on Chromium browsers)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
+
+  const getCanvasDimensions = () => {
+    switch(exportResolution) {
+      case '4k': return { width: 3840, height: 2160 };
+      case '720p': return { width: 1280, height: 720 };
+      case 'vertical': return { width: 1080, height: 1920 };
+      case '1080p': 
+      default: return { width: 1920, height: 1080 };
+    }
+  };
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -226,7 +238,7 @@ export function VideoPlayer({ scenes, audioUrl, audioDuration, onUpdateScene }: 
     
     // Attempt dual-stream recording (Canvas + Audio)
     try {
-      const canvasStream = canvasRef.current.captureStream(30); // 30 FPS
+      const canvasStream = canvasRef.current.captureStream(exportFps); // use selected FPS
       
       // We need to capture audio from the element. We use Web Audio API.
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -311,6 +323,31 @@ export function VideoPlayer({ scenes, audioUrl, audioDuration, onUpdateScene }: 
               <option value="none">None</option>
             </select>
           </div>
+          <div className="flex items-center gap-2 border-l border-slate-800 pl-4">
+            <label className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Format:</label>
+            <select 
+              value={exportResolution}
+              onChange={(e) => setExportResolution(e.target.value)}
+              className="bg-slate-950 border border-slate-800 text-slate-300 rounded text-[10px] uppercase font-bold p-1 pr-6 outline-none focus:border-emerald-500 cursor-pointer"
+            >
+              <option value="1080p">1080p (FHD)</option>
+              <option value="720p">720p (HD)</option>
+              <option value="4k">4K (UHD)</option>
+              <option value="vertical">Vertical (9:16)</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2 border-l border-slate-800 pl-4">
+            <label className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">FPS:</label>
+            <select 
+              value={exportFps}
+              onChange={(e) => setExportFps(parseInt(e.target.value))}
+              className="bg-slate-950 border border-slate-800 text-slate-300 rounded text-[10px] uppercase font-bold p-1 pr-6 outline-none focus:border-emerald-500 cursor-pointer"
+            >
+              <option value={24}>24 FPS</option>
+              <option value={30}>30 FPS</option>
+              <option value={60}>60 FPS</option>
+            </select>
+          </div>
         </div>
         {isRecording ? (
           <button 
@@ -334,8 +371,8 @@ export function VideoPlayer({ scenes, audioUrl, audioDuration, onUpdateScene }: 
       <div className="bg-black border border-slate-800 rounded relative aspect-video flex-shrink-0 group mx-auto w-full max-w-4xl shadow-2xl">
         <canvas 
           ref={canvasRef} 
-          width={1920} 
-          height={1080} 
+          width={getCanvasDimensions().width} 
+          height={getCanvasDimensions().height} 
           className="w-full h-full object-contain bg-slate-950"
         />
         

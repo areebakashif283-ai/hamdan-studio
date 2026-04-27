@@ -34,17 +34,29 @@ export function Storyboard({ scenes, onUploadImage, onProceed }: StoryboardProps
           <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Step 2: Sequence & Prompts</h2>
           <p className="text-xs text-slate-500 mt-1">Generate images using these exact prompts, then upload to match.</p>
         </div>
-        <button
-          onClick={onProceed}
-          disabled={!isReadyForVideo}
-          className={`shrink-0 px-6 py-2 rounded text-xs font-bold uppercase tracking-wider transition-all ${
-            isReadyForVideo 
-              ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow shadow-emerald-900/50" 
-              : "bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed"
-          }`}
-        >
-          Open Video Player
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              const allPrompts = scenes.map((s, idx) => `Scene ${idx + 1}:\n${s.imagePrompt}`).join('\n\n');
+              copyToClipboard(allPrompts);
+            }}
+            className="shrink-0 px-4 py-2 flex items-center gap-2 rounded text-xs font-bold uppercase tracking-wider transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
+          >
+            <Copy className="w-3 h-3" />
+            Copy All Prompts
+          </button>
+          <button
+            onClick={onProceed}
+            disabled={!isReadyForVideo}
+            className={`shrink-0 px-6 py-2 rounded text-xs font-bold uppercase tracking-wider transition-all ${
+              isReadyForVideo 
+                ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow shadow-emerald-900/50" 
+                : "bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed"
+            }`}
+          >
+            Open Video Player
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
