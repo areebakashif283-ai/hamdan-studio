@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
-import { UploadCloud, Loader2, Play } from "lucide-react";
+import { UploadCloud, Loader2, Play, CheckCircle, XCircle } from "lucide-react";
 import { cn, formatTime } from "../lib/utils";
+import { validateApiKey } from "../lib/gemini";
 
 interface AudioSetupProps {
   onGenerate: (script: string, audioFile: File, audioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File, apiKey?: string) => void;
@@ -14,7 +15,18 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
   const [stylePrompt, setStylePrompt] = useState("");
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [apiKey, setApiKey] = useState("");
+  const [isValidatingKey, setIsValidatingKey] = useState(false);
+  const [keyStatus, setKeyStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  const handleValidateKey = async () => {
+    if (!apiKey.trim()) return;
+    setIsValidatingKey(true);
+    setKeyStatus('idle');
+    const isValid = await validateApiKey(apiKey.trim());
+    setKeyStatus(isValid ? 'valid' : 'invalid');
+    setIsValidatingKey(false);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -54,14 +66,44 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
       <div className="space-y-3">
         <div className="p-3 bg-slate-900 border border-slate-800 rounded">
           <label className="text-[10px] text-slate-500 block mb-2 uppercase font-bold tracking-wider">Gemini API Key (Optional)</label>
-          <input
-            type="password"
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 text-xs text-slate-300 placeholder-slate-700 outline-none"
-            placeholder="Paste your Gemini AI API key here (Optional if already configured)"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            disabled={isLoading}
-          />
+          <div className="flex gap-2">
+            <input
+              type="password"
+              className="flex-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 text-xs text-slate-300 placeholder-slate-700 outline-none"
+              placeholder="Paste your Gemini AI API key here (Optional if already configured)"
+              value={apiKey}
+              onChange={(e) => {
+                setApiKey(e.target.value);
+                setKeyStatus('idle');
+              }}
+              disabled={isLoading || isValidatingKey}
+            />
+            <button
+              type="button"
+              onClick={handleValidateKey}
+              disabled={!apiKey.trim() || isLoading || isValidatingKey}
+              className={cn(
+                "px-3 py-2 rounded text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1",
+                (!apiKey.trim() || isLoading || isValidatingKey) 
+                  ? "bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed"
+                  : keyStatus === 'valid'
+                    ? "bg-emerald-900 text-emerald-400 border border-emerald-800"
+                    : keyStatus === 'invalid'
+                      ? "bg-rose-900 text-rose-400 border border-rose-800"
+                      : "bg-indigo-600 hover:bg-indigo-500 text-white"
+              )}
+            >
+              {isValidatingKey ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : keyStatus === 'valid' ? (
+                <><CheckCircle className="w-3 h-3" /> Valid</>
+              ) : keyStatus === 'invalid' ? (
+                <><XCircle className="w-3 h-3" /> Invalid</>
+              ) : (
+                "Validate"
+              )}
+            </button>
+          </div>
           <p className="text-[10px] text-slate-500 mt-2">Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Google AI Studio</a> to use the gemini-1.5-flash model.</p>
         </div>
 

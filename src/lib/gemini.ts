@@ -2,6 +2,20 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Scene } from "../types";
 
+export async function validateApiKey(userApiKey: string): Promise<boolean> {
+  try {
+    const ai = new GoogleGenAI({ apiKey: userApiKey });
+    await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: "Hi"
+    });
+    return true;
+  } catch (error) {
+    console.error("API Key validation failed:", error);
+    return false;
+  }
+}
+
 export async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
