@@ -64,9 +64,9 @@ export async function generateStoryboard(
   userApiKey?: string,
   model: string = "gemini-1.5-flash"
 ): Promise<Scene[]> {
-  const apiKey = userApiKey || import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+  const apiKey = userApiKey || import.meta.env.VITE_GEMINI_API_KEY || (process.env as any)?.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("Gemini API key is missing. Please provide it, or add it to your environment variables.");
+    throw new Error("API key is missing. Please provide it in the UI, or add VITE_GEMINI_API_KEY to your environment variables (especially on Vercel).");
   }
 
   const ai = new GoogleGenAI({ apiKey });

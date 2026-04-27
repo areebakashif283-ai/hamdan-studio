@@ -28,9 +28,10 @@ export default function App() {
       setScenes(generatedScenes);
       setUserApiKey(providedApiKey || '');
       setStep(2);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Failed to generate scenes. Please ensure you have configured your GEMINI_API_KEY environment variable correctly.');
+      const msg = error?.message || 'Unknown error occurred.';
+      alert(`Failed to generate scenes.\n\nError: ${msg}\n\nCheck your GEMINI_API_KEY and network connection.`);
     } finally {
       setIsLoading(false);
     }
