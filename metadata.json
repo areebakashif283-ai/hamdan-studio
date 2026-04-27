@@ -1,0 +1,6 @@
+{
+  "name": "AI Video Automator",
+  "description": "Automate video creation by syncing your script, voiceover, and generated images into a single timeline.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
