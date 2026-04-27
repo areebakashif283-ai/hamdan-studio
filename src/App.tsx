@@ -17,14 +17,14 @@ export default function App() {
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [userApiKey, setUserApiKey] = useState('');
 
-  const handleGenerate = async (finalScript: string, audioFile: File, newAudioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File, providedApiKey?: string) => {
+  const handleGenerate = async (finalScript: string, audioFile: File, newAudioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File, providedApiKey?: string, selectedModel?: string) => {
     setIsLoading(true);
     setScript(finalScript);
     setAudioUrl(newAudioUrl);
     setAudioDuration(duration);
 
     try {
-      const generatedScenes = await generateStoryboard(finalScript, duration, stylePrompt, referenceImage, providedApiKey);
+      const generatedScenes = await generateStoryboard(finalScript, duration, stylePrompt, referenceImage, providedApiKey, selectedModel);
       setScenes(generatedScenes);
       setUserApiKey(providedApiKey || '');
       setStep(2);

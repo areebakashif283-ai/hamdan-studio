@@ -2,15 +2,30 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Scene } from "../types";
 
-export async function validateApiKey(userApiKey: string): Promise<boolean> {
+export async function validateApiKey(userApiKey: string, model: string = "gemini-3-flash-preview"): Promise<boolean> {
   try {
     const ai = new GoogleGenAI({ apiKey: userApiKey });
+    // Use the requested model first
     await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: model,
       contents: "Hi"
     });
     return true;
-  } catch (error) {
+  } catch (error: any) {
+    // If it was a model 404, try with gemini-3-flash-preview to see if the key is just valid
+    if (error?.message?.includes("404") || error?.status === "NOT_FOUND") {
+      try {
+        const ai = new GoogleGenAI({ apiKey: userApiKey });
+        await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: "Hi"
+        });
+        return true;
+      } catch (innerError) {
+        console.error("API Key validation failed even with fallback:", innerError);
+        return false;
+      }
+    }
     console.error("API Key validation failed:", error);
     return false;
   }
@@ -34,7 +49,8 @@ export async function generateStoryboard(
   audioDuration: number,
   stylePrompt?: string,
   referenceImage?: File,
-  userApiKey?: string
+  userApiKey?: string,
+  model: string = "gemini-1.5-flash"
 ): Promise<Scene[]> {
   const apiKey = userApiKey || import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -81,7 +97,7 @@ For each scene, provide:
   }
 
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+    model: model,
     contents: { parts },
     config: {
       responseMimeType: "application/json",

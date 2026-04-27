@@ -4,7 +4,7 @@ import { cn, formatTime } from "../lib/utils";
 import { validateApiKey } from "../lib/gemini";
 
 interface AudioSetupProps {
-  onGenerate: (script: string, audioFile: File, audioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File, apiKey?: string) => void;
+  onGenerate: (script: string, audioFile: File, audioUrl: string, duration: number, stylePrompt?: string, referenceImage?: File, apiKey?: string, model?: string) => void;
   isLoading: boolean;
 }
 
@@ -15,6 +15,7 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
   const [stylePrompt, setStylePrompt] = useState("");
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [apiKey, setApiKey] = useState("");
+  const [model, setModel] = useState("gemini-3-flash-preview");
   const [isValidatingKey, setIsValidatingKey] = useState(false);
   const [keyStatus, setKeyStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -23,7 +24,7 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
     if (!apiKey.trim()) return;
     setIsValidatingKey(true);
     setKeyStatus('idle');
-    const isValid = await validateApiKey(apiKey.trim());
+    const isValid = await validateApiKey(apiKey.trim(), model);
     setKeyStatus(isValid ? 'valid' : 'invalid');
     setIsValidatingKey(false);
   };
@@ -58,14 +59,27 @@ export function AudioSetup({ onGenerate, isLoading }: AudioSetupProps) {
     if (!script.trim() || !file || duration === 0) return;
     
     const url = URL.createObjectURL(file);
-    onGenerate(script, file, url, duration, stylePrompt.trim() ? stylePrompt : undefined, referenceImage || undefined, apiKey.trim() ? apiKey.trim() : undefined);
+    onGenerate(script, file, url, duration, stylePrompt.trim() ? stylePrompt : undefined, referenceImage || undefined, apiKey.trim() ? apiKey.trim() : undefined, model);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full">
       <div className="space-y-3">
         <div className="p-3 bg-slate-900 border border-slate-800 rounded">
-          <label className="text-[10px] text-slate-500 block mb-2 uppercase font-bold tracking-wider">Gemini API Key (Optional)</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">AI Configuration</label>
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              disabled={isLoading || isValidatingKey}
+              className="bg-slate-950 border border-slate-800 text-slate-300 rounded text-[10px] uppercase font-bold p-1 pr-6 outline-none focus:border-emerald-500 cursor-pointer"
+            >
+              <option value="gemini-3-flash-preview">Gemini 3 Flash (Latest)</option>
+              <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Complex)</option>
+              <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash (Legacy)</option>
+            </select>
+          </div>
           <div className="flex gap-2">
             <input
               type="password"
